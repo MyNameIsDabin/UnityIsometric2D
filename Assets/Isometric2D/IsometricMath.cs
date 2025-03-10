@@ -4,6 +4,28 @@ namespace Isometric2D
 {
     public static class IsometricMath
     {
+        public static bool IsInFrontOf(this IsometricObject obj1, IsometricObject obj2)
+        {
+            if (obj2.FloorTopCorner.x < obj1.FloorBottomCorner.x)
+            {
+                var dire = (obj2.FloorRightCorner - obj2.FloorTopCorner).normalized;
+            
+                // 오른쪽 모서리 뒤쪽에 위치한 벡터는 뒤로 판단 
+                if (Cross(dire, (obj1.FloorBottomCorner - obj2.FloorTopCorner).normalized) > 0)
+                    return false;
+            }
+            else
+            {
+                var dire = (obj2.FloorLeftCorner - obj2.FloorTopCorner).normalized;
+            
+                // 오른쪽 모서리 뒤쪽에 위치한 벡터는 뒤로 판단 
+                if (Cross(dire, (obj1.FloorBottomCorner - obj2.FloorTopCorner).normalized) <= 0)
+                    return false;
+            }
+            
+            return true;
+        }
+        
         public static bool IsOverlap(this IsometricObject obj1, IsometricObject obj2)
         {
             return IsPolygonsOverlap(obj1.Corners, obj2.Corners);

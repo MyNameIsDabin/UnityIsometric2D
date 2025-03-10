@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
@@ -19,9 +20,13 @@ namespace Isometric2D
         public Vector3 FloorRightCorner => _floorCorners[1];
         public Vector3 FloorBottomCorner => _floorCorners[2];
         public Vector3 FloorLeftCorner => _floorCorners[3];
+        public Vector3 FloorCenter => (FloorBottomCorner + FloorTopCorner) * 0.5f;
 
+        // Top, Right Top, Right Bottom, Bottom, Left Bottom, Left Top
         public Vector2[] Corners { get; private set; } = new Vector2[6];
 
+        private Vector2? _cachedPosition;
+        
         private void OnEnable()
         {
             IsometricWorld.Instance.AddIsometricObject(this);
@@ -38,8 +43,50 @@ namespace Isometric2D
         }
 
         private void OnDrawGizmos()
-        {
+        {   
             DrawIsometricBody();
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            var isometricWorld = IsometricWorld.Instance;
+
+            if (isometricWorld == null)
+                return;
+            
+            for (var i = 0; i < isometricWorld.IsometricObjects.Count; i++)
+            {
+                var isometricObject = isometricWorld.IsometricObjects[i];
+                
+                if (isometricObject == this)
+                    continue;
+
+                if (!isometricObject.gameObject.activeSelf)
+                    continue;
+
+                if (this.IsOverlap(isometricObject) 
+                    && this.IsInFrontOf(isometricObject))
+                {
+                    var offset = Vector3.up * 0.08f;
+                    GizmoUtils.DrawVector(isometricObject.FloorCenter, 
+                        FloorCenter,
+                        Color.yellow,
+                        $"[{gameObject.name} ▶ {isometricObject.name}]", offset);
+                }
+            }
+        }
+
+        private void UpdateCorners(IsometricWorld isometricWorld)
+        {
+            _floorCorners = isometricWorld.GetIsometricCorners(transform.position, extends);
+
+            var virtualHeight = Vector3.up * height;
+            Corners[0] = _floorCorners[0] + virtualHeight; // Top
+            Corners[1] = _floorCorners[1] + virtualHeight; // Right Top
+            Corners[2] = _floorCorners[1]; // Right Bottom
+            Corners[3] = _floorCorners[2]; // Bottom
+            Corners[4] = _floorCorners[3]; // Left Bottom
+            Corners[5] = _floorCorners[3] + virtualHeight; // Left Top
         }
 
         private void Update()
@@ -48,17 +95,15 @@ namespace Isometric2D
 
             if (isometricWorld == null)
                 return;
-            
-            _floorCorners = isometricWorld.GetIsometricCorners(transform.position, extends);
 
-            var virtualHeight = Vector3.up * height;
-            
-            Corners[0] = _floorCorners[0] + virtualHeight; // Top
-            Corners[1] = _floorCorners[1] + virtualHeight; // Right Top
-            Corners[2] = _floorCorners[1]; // Right Bottom
-            Corners[3] = _floorCorners[2]; // Bottom
-            Corners[4] = _floorCorners[3]; // Left Bottom
-            Corners[5] = _floorCorners[3] + virtualHeight; // Left Top
+            if (_cachedPosition != transform.position)
+            {
+                _cachedPosition = transform.position;
+                UpdateCorners(isometricWorld);
+            #if UNITY_EDITOR
+                Debug.Log("Corners Updated");
+            #endif
+            }
             
             var contacted = false;
             

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Isometric2D
@@ -22,7 +23,7 @@ namespace Isometric2D
         public Color TileColor => tileColor;
 
         private List<IsometricObject> _isometricObjects = new();
-        public List<IsometricObject> IsometricObjects => _isometricObjects;
+        public List<IsometricObject> IsometricObjects => _isometricObjects.Where(x => x != null).ToList();
         
         private static IsometricWorld _instance;
 
