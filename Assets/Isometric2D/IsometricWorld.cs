@@ -12,8 +12,7 @@ namespace Isometric2D
         [SerializeField] private float tileWidth = 1f;
         [SerializeField] private float tileHeight = 0.5f;
 
-        
-        [FormerlySerializedAs("isoObjectColor")]
+        [Header("Gizmo Settings")] 
         [SerializeField] private Color defaultColor = Color.white;
         [SerializeField] private Color linkedColor = Color.green;
         [SerializeField] private Color arrowColor = Color.yellow;
