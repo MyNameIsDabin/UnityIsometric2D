@@ -8,6 +8,23 @@ namespace Isometric2D
 {
     public class GizmoUtils
     {
+        public static void DrawText(Vector3 position, Color color, string name = null)
+        {
+#if UNITY_EDITOR
+            if (string.IsNullOrEmpty(name)) 
+                return;
+            
+            Handles.Label(position, name, new GUIStyle
+            {
+                alignment = TextAnchor.MiddleCenter,
+                normal =
+                {
+                    textColor = color
+                }
+            });
+#endif
+        }
+        
         public static void DrawVector(Vector3 start, Vector3 end, Color color, string name = null, Vector2? nameOffset = null)
         {
 #if UNITY_EDITOR
@@ -29,9 +46,13 @@ namespace Isometric2D
             {
                 var style = new GUIStyle
                 {
-                    alignment = TextAnchor.LowerLeft
+                    alignment = TextAnchor.LowerLeft,
+                    normal =
+                    {
+                        textColor = color
+                    }
                 };
-                style.normal.textColor = color;
+                
                 Handles.Label(new Vector2(end.x, end.y) + (nameOffset ?? new Vector2(0.1f, 0.3f)), name, style);
             }
         }

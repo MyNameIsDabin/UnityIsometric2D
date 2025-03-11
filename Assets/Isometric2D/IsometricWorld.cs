@@ -1,29 +1,43 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Isometric2D
 {
     [ExecuteAlways]
     public class IsometricWorld : MonoBehaviour
     {
-        [Header("Isometric Settings")] [SerializeField]
-        private float tileWidth = 1f;
-
+        [Header("Isometric Settings")] 
+        [SerializeField] private float tileWidth = 1f;
         [SerializeField] private float tileHeight = 0.5f;
 
-        [Header("Debug")] [SerializeField] private Color tileColor = Color.white;
-
+        
+        [FormerlySerializedAs("isoObjectColor")]
+        [SerializeField] private Color defaultColor = Color.white;
+        [SerializeField] private Color linkedColor = Color.green;
+        [SerializeField] private Color arrowColor = Color.yellow;
+        [SerializeField] private bool debugMode = false;
+        
         private Vector3[] _cachedIsometricIdentityCorners;
         private Vector3 _cachedDirectionToRightTop;
         private Vector3 _cachedDirectionToLeftTop;
         private Vector3 _cachedDirectionToLeftBottom;
         private Vector3 _cachedDirectionToRightBottom;
 
-        public Color TileColor => tileColor;
+        public Color DefaultColor => defaultColor;
+        public Color LinkedColor => linkedColor;
+        public Color ArrowColor => arrowColor;
 
-        private List<IsometricObject> _isometricObjects = new();
-        public List<IsometricObject> IsometricObjects => _isometricObjects.Where(x => x != null).ToList();
+        public List<IsometricObject> IsometricObjects { get; } = new();
+        public HashSet<IsometricObject> RootObjects { get; } = new();
+
+        private readonly HashSet<IsometricObject> _visited = new();
+        
+        private Stack<IsometricObject> Sorted { get; } = new();
+        
+        public bool IsDebugMode => debugMode;
         
         private static IsometricWorld _instance;
 
@@ -51,15 +65,20 @@ namespace Isometric2D
             _instance = this;
         }
 
+        private void Update()
+        {
+            SortIsometricObjects();
+        }
+
         public void AddIsometricObject(IsometricObject isometricObject)
         {
-            if (!_isometricObjects.Contains(isometricObject))
-                _isometricObjects.Add(isometricObject);
+            if (!IsometricObjects.Contains(isometricObject))
+                IsometricObjects.Add(isometricObject);
         }
 
         public void RemoveIsometricObject(IsometricObject isometricObject)
         {
-            _isometricObjects.Remove(isometricObject);
+            IsometricObjects.Remove(isometricObject);
         }
 
         public Vector3[] IsometricIdentityCorners
@@ -150,6 +169,78 @@ namespace Isometric2D
             }
 
             Gizmos.color = previousColor;
+        }
+        
+        public void SortIsometricObjects()
+        {
+            RootObjects.Clear();
+            Sorted.Clear();
+            _visited.Clear();
+
+            for (var i = IsometricObjects.Count - 1; i >= 0; i--)
+            {
+                var isoObj = IsometricObjects[i];
+                
+                if (isoObj == null)
+                {
+                    IsometricObjects.Remove(isoObj);
+                    continue;
+                }
+                
+                if (!isoObj.gameObject.activeSelf)
+                    continue;
+
+                for (var j = IsometricObjects.Count - 1; j >= 0; j--)
+                {
+                    var otherIsoObj = IsometricObjects[j];
+
+                    if (otherIsoObj == null)
+                        IsometricObjects.Remove(otherIsoObj);
+
+                    if (!otherIsoObj.gameObject.activeSelf
+                        || isoObj == otherIsoObj
+                        || !isoObj.IsOverlap(otherIsoObj)
+                        || !isoObj.IsInFrontOf(otherIsoObj))
+                    {
+                        otherIsoObj.RemoveFront(isoObj);
+                        isoObj.RemoveBack(otherIsoObj);
+                        continue;
+                    }
+
+                    otherIsoObj.SetFront(isoObj);
+                    isoObj.SetBack(otherIsoObj);
+                }
+                
+                foreach (var front in isoObj.Fronts.Where(front => front == null).ToList())
+                    isoObj.RemoveFront(front);
+                
+                foreach (var back in isoObj.Backs.Where(back => back == null).ToList())
+                    isoObj.RemoveBack(back);
+                
+                if (isoObj.Backs.Count == 0)
+                    RootObjects.Add(isoObj);
+            }
+
+            foreach (var rootBackObj in RootObjects)
+                InternalSearch(rootBackObj);
+            
+            var order = 0;
+            while (Sorted.TryPop(out var isoObj))
+            {
+                isoObj.Order = order;
+                order++;
+            }
+        }
+        
+        private void InternalSearch(IsometricObject isometricObject)
+        {
+            if (!_visited.Add(isometricObject))
+                return;
+            
+            foreach (var front in isometricObject.Fronts)
+                InternalSearch(front);
+            
+            Sorted.Push(isometricObject);
         }
     }
 }

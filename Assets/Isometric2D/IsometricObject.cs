@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
@@ -9,8 +11,6 @@ namespace Isometric2D
     {
         [SerializeField] private Vector2 extends;
         [SerializeField] private float height;
-        
-        private Color _gizmosColor = Color.white;
 
         // Top, Right, Bottom, Left
         private Vector3[] _floorCorners = new Vector3[4];
@@ -23,9 +23,15 @@ namespace Isometric2D
         public Vector3 FloorCenter => (FloorBottomCorner + FloorTopCorner) * 0.5f;
 
         // Top, Right Top, Right Bottom, Bottom, Left Bottom, Left Top
-        public Vector2[] Corners { get; private set; } = new Vector2[6];
+        public Vector2[] Corners { get; } = new Vector2[6];
 
         private Vector2? _cachedPosition;
+        
+        public int Order { get; set; }
+
+        public HashSet<IsometricObject> Fronts { get; } = new();
+
+        public HashSet<IsometricObject> Backs { get; } = new();
         
         private void OnEnable()
         {
@@ -43,37 +49,35 @@ namespace Isometric2D
         }
 
         private void OnDrawGizmos()
-        {   
+        {  
             DrawIsometricBody();
+            
+            if (IsometricWorld.Instance is { IsDebugMode: true }) 
+                DrawIsometricGizmoDebug();
         }
 
-        private void OnDrawGizmosSelected()
+        private void DrawIsometricGizmoDebug()
         {
             var isometricWorld = IsometricWorld.Instance;
 
             if (isometricWorld == null)
                 return;
             
-            for (var i = 0; i < isometricWorld.IsometricObjects.Count; i++)
+            foreach (var backObj in Backs)
             {
-                var isometricObject = isometricWorld.IsometricObjects[i];
+                if (!backObj.gameObject.activeSelf)
+                    continue;
                 
-                if (isometricObject == this)
-                    continue;
-
-                if (!isometricObject.gameObject.activeSelf)
-                    continue;
-
-                if (this.IsOverlap(isometricObject) 
-                    && this.IsInFrontOf(isometricObject))
-                {
-                    var offset = Vector3.up * 0.08f;
-                    GizmoUtils.DrawVector(isometricObject.FloorCenter, 
-                        FloorCenter,
-                        Color.yellow,
-                        $"[{gameObject.name} ▶ {isometricObject.name}]", offset);
-                }
+                var offset = Vector3.up * 0.08f;
+                GizmoUtils.DrawVector(backObj.FloorCenter, 
+                    FloorCenter,
+                    isometricWorld.ArrowColor,
+                    $"[{gameObject.name} ▶ {backObj.name}]", offset);
             }
+            
+            var isRoot = isometricWorld.RootObjects.Contains(this);
+            
+            GizmoUtils.DrawText(FloorCenter + Vector3.up * 0.2f, Color.yellow, isRoot ? $"{Order} (Root)" : $"{Order}");
         }
 
         private void UpdateCorners(IsometricWorld isometricWorld)
@@ -96,35 +100,39 @@ namespace Isometric2D
             if (isometricWorld == null)
                 return;
 
+            var isUpdated = false;
+            
             if (_cachedPosition != transform.position)
             {
                 _cachedPosition = transform.position;
                 UpdateCorners(isometricWorld);
-            #if UNITY_EDITOR
-                Debug.Log("Corners Updated");
-            #endif
+                isUpdated = true;
             }
             
-            var contacted = false;
-            
-            foreach (var isometricObject in isometricWorld.IsometricObjects)
-            {
-                if (isometricObject == this)
-                    continue;
-                
-                if (!isometricObject.gameObject.activeSelf)
-                    continue;
-                
-                if (isometricObject.IsOverlap(this))
-                {
-                    _gizmosColor = Color.green;
-                    contacted = true;
-                    break;
-                }
-            }
+#if UNITY_EDITOR
+            if (!isUpdated)
+                UpdateCorners(isometricWorld);
+#endif
+        }
+        
+        public void SetBack(IsometricObject isometricObject)
+        {
+            Backs.Add(isometricObject);
+        }
 
-            if (!contacted)
-                _gizmosColor = isometricWorld.TileColor;
+        public void RemoveBack(IsometricObject isometricObject)
+        {
+            Backs.Remove(isometricObject);
+        }
+        
+        public void SetFront(IsometricObject front)
+        {
+            Fronts.Add(front);
+        }
+        
+        public void RemoveFront(IsometricObject front)
+        {
+            Fronts.Remove(front);
         }
 
         private void DrawIsometricBody()
@@ -136,12 +144,19 @@ namespace Isometric2D
 
             var previousColor = Gizmos.color;
 
-            Gizmos.color = _gizmosColor;
+            var isConnected = isometricWorld.IsometricObjects.Any(x => x.Fronts.Contains(this));
+            var defaultColor = isometricWorld.DefaultColor;
+            var gizmoColor = isConnected ? isometricWorld.LinkedColor : defaultColor;
+
+            Gizmos.color = gizmoColor;
 
             if (height > 0)
             {
+                var copied = gizmoColor;
+                copied.a = defaultColor.a * 0.2f;
+                
                 var topCorners = isometricWorld.GetIsometricCorners(transform.position + Vector3.up * height, extends);
-                isometricWorld.DrawIsometricTile(_floorCorners, Color.grey, _gizmosColor, _gizmosColor, Color.grey);
+                isometricWorld.DrawIsometricTile(_floorCorners, copied, gizmoColor, gizmoColor, copied);
                 isometricWorld.DrawIsometricTile(topCorners);
 
                 Gizmos.DrawLine(_floorCorners[1], topCorners[1]);
