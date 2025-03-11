@@ -71,12 +71,12 @@ namespace Isometric2D
                 GizmoUtils.DrawVector(backObj.FloorCenter, 
                     FloorCenter,
                     isometricWorld.ArrowColor,
-                    $"[{gameObject.name} ▶ {backObj.name}]", offset);
+                    $"[{backObj.name} ▶ {gameObject.name}]", offset);
             }
             
             var isRoot = isometricWorld.RootObjects.Contains(this);
             
-            GizmoUtils.DrawText(FloorCenter + Vector3.up * 0.2f, Color.yellow, isRoot ? $"{Order} (Root)" : $"{Order}");
+            GizmoUtils.DrawText(FloorCenter + Vector3.up * 0.2f, Color.yellow, isRoot ? $"{Order} (Root | {gameObject.name})" : $"{Order}");
         }
 
         private void UpdateCorners(IsometricWorld isometricWorld)
