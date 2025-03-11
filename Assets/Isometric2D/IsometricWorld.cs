@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -78,6 +77,12 @@ namespace Isometric2D
 
         public void RemoveIsometricObject(IsometricObject isometricObject)
         {
+            foreach (var back in isometricObject.Backs)
+                back.RemoveFront(isometricObject);
+            
+            foreach (var front in isometricObject.Fronts)
+                front.RemoveBack(isometricObject);
+
             IsometricObjects.Remove(isometricObject);
         }
 
@@ -210,13 +215,17 @@ namespace Isometric2D
                     otherIsoObj.SetFront(isoObj);
                     isoObj.SetBack(otherIsoObj);
                 }
-                
-                foreach (var front in isoObj.Fronts.Where(front => front == null).ToList())
-                    isoObj.RemoveFront(front);
-                
-                foreach (var back in isoObj.Backs.Where(back => back == null).ToList())
-                    isoObj.RemoveBack(back);
-                
+
+                // Editor 환경에서 플레이 중이 아닐 때 수동으로 오브젝트를 제거한 경우를 대응하기 위해 수동으로 null 참조를 정리.
+                if (!Application.isPlaying)
+                {
+                    foreach (var front in isoObj.Fronts.Where(front => front == null).ToList())
+                        isoObj.RemoveFront(front);
+            
+                    foreach (var back in isoObj.Backs.Where(back => back == null).ToList())
+                        isoObj.RemoveBack(back);                    
+                }
+
                 if (isoObj.Backs.Count == 0)
                     RootObjects.Add(isoObj);
             }

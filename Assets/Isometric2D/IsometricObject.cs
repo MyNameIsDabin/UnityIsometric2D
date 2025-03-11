@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -144,7 +143,8 @@ namespace Isometric2D
 
             var previousColor = Gizmos.color;
 
-            var isConnected = isometricWorld.IsometricObjects.Any(x => x.Fronts.Contains(this));
+            var isConnected = isometricWorld.IsometricObjects.Any(x => x.Fronts.Contains(this))
+                || isometricWorld.IsometricObjects.Any(x => x.Backs.Contains(this));
             var defaultColor = isometricWorld.DefaultColor;
             var gizmoColor = isConnected ? isometricWorld.LinkedColor : defaultColor;
 

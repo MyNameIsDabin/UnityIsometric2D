@@ -11,7 +11,7 @@ namespace Isometric2D
                 var dire = (obj2.FloorRightCorner - obj2.FloorTopCorner).normalized;
             
                 // 오른쪽 모서리 뒤쪽에 위치한 벡터는 뒤로 판단 
-                if (Cross(dire, (obj1.FloorBottomCorner - obj2.FloorTopCorner).normalized) > 0)
+                if (Cross(dire, (obj1.FloorBottomCorner - obj2.FloorTopCorner).normalized) >= 0)
                     return false;
             }
             else
