@@ -26,12 +26,34 @@ namespace Isometric2D
             return true;
         }
         
+        public static bool IsInFrontOf(this Vector2[] corners1, Vector2[] corners2)
+        {
+            if (corners2[0].x < corners1[2].x)
+            {
+                var dire1 = (corners2[1] - corners2[0]).normalized;
+                var dire2 = (corners1[2] - corners2[0]).normalized;
+            
+                if (Cross(new Vector2(dire1.x, dire1.y), new Vector2(dire2.x, dire2.y)) >= 0)
+                    return false;
+            }
+            else
+            {
+                var dire1 = (corners2[3] - corners2[0]).normalized;
+                var dire2 = (corners1[2] - corners2[0]).normalized;
+                
+                if (Cross(new Vector2(dire1.x, dire1.y), new Vector2(dire2.x, dire2.y)) <= 0)
+                    return false;
+            }
+            
+            return true;
+        }
+        
         public static bool IsOverlap(this IsometricObject obj1, IsometricObject obj2)
         {
             return IsPolygonsOverlap(obj1.Corners, obj2.Corners);
         }
         
-        private static bool IsPolygonsOverlap(Vector2[] polygon1, Vector2[] polygon2)
+        public static bool IsPolygonsOverlap(Vector2[] polygon1, Vector2[] polygon2)
         {
             // AABB를 이용한 빠른 겹침 검사
             if (!IsAABBOverlap(polygon1, polygon2))

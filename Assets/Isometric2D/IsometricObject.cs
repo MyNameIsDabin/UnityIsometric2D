@@ -31,6 +31,8 @@ namespace Isometric2D
         public HashSet<IsometricObject> Fronts { get; } = new();
 
         public HashSet<IsometricObject> Backs { get; } = new();
+
+        public Vector2 Extends => extends;
         
         private void OnEnable()
         {
