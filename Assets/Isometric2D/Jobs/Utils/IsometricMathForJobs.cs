@@ -121,7 +121,7 @@ namespace Isometric2D
             for (int i = 0, j = n - 1; i < n; j = i++)
             {
                 if (((polygon[i].y > point.y) != (polygon[j].y > point.y)) &&
-                    (point.y < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x))
+                    (point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x))
                 {
                     inside = !inside;
                 }

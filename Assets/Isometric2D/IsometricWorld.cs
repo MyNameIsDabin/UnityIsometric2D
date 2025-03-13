@@ -1,10 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using Isometric2D.Jobs.Structs;
-using Unity.Collections;
 using UnityEngine;
-using UnityEngine.Jobs;
 using Debug = UnityEngine.Debug;
 
 namespace Isometric2D
@@ -15,7 +11,7 @@ namespace Isometric2D
         [Header("Isometric Settings")] 
         [SerializeField] private float tileWidth = 1f;
         [SerializeField] private float tileHeight = 0.5f;
-        [SerializeField] private bool useJobSystem = true;
+        [SerializeField] private IsometricSorterType sorterType = IsometricSorterType.JobSystem;
         
         [Header("Gizmo Settings")] 
         [SerializeField] private float sortAvgTime;
@@ -29,23 +25,36 @@ namespace Isometric2D
         private Vector3 _cachedDirectionToLeftTop;
         private Vector3 _cachedDirectionToLeftBottom;
         private Vector3 _cachedDirectionToRightBottom;
-
+        private int _sortCallCount;
+        private float _sortAccElapsed;
+        private IIsometricSorter _isometricSorter;
+        private IsometricSorterType _cachedIsometricSorterType;
+        
+        private readonly Stopwatch _sortStopWatch = new();
+        private readonly List<IsometricObject> _isometricObjects = new();
+        
         public Color DefaultColor => defaultColor;
         public Color LinkedColor => linkedColor;
         public Color ArrowColor => arrowColor;
-
-        public List<IsometricObject> IsometricObjects { get; } = new();
-        public HashSet<IsometricObject> RootObjects { get; } = new();
-
-        private readonly HashSet<IsometricObject> _visited = new();
-        
-        private Stack<IsometricObject> Sorted { get; } = new();
-        
-        private Stopwatch _sortStopWatch = new Stopwatch();
-        private int _sortCallCount = 0;
-        private float _sortAccElapsed = 0;
-        
         public bool IsDebugMode => debugMode;
+
+        public List<IsometricObject> IsometricObjects => _isometricObjects;
+        
+        public IIsometricSorter IsometricSorter
+        {
+            get
+            {
+                var willBeUpdated = _isometricSorter == null || _cachedIsometricSorterType != sorterType;
+
+                if (willBeUpdated)
+                {
+                    _cachedIsometricSorterType = sorterType;
+                    _isometricSorter = IsometricSorterAttribute.CreateSorter(sorterType);
+                }
+                
+                return _isometricSorter;
+            }
+        }
         
         private static IsometricWorld _instance;
 
@@ -82,8 +91,8 @@ namespace Isometric2D
 
         public void AddIsometricObject(IsometricObject isometricObject)
         {
-            if (!IsometricObjects.Contains(isometricObject))
-                IsometricObjects.Add(isometricObject);
+            if (!_isometricObjects.Contains(isometricObject))
+                _isometricObjects.Add(isometricObject);
         }
 
         public void RemoveIsometricObject(IsometricObject isometricObject)
@@ -94,7 +103,7 @@ namespace Isometric2D
             foreach (var front in isometricObject.Fronts)
                 front.RemoveBack(isometricObject);
 
-            IsometricObjects.Remove(isometricObject);
+            _isometricObjects.Remove(isometricObject);
         }
 
         public Vector3[] IsometricIdentityCorners
@@ -186,176 +195,16 @@ namespace Isometric2D
 
             Gizmos.color = previousColor;
         }
-        
-        
-        public void SortIsometricObjects()
+
+        private void SortIsometricObjects()
         {
         #if UNITY_EDITOR
             _sortCallCount++;
             _sortStopWatch.Restart();
         #endif
-
-            RootObjects.Clear();
-            Sorted.Clear();
-            _visited.Clear();
             
-            if (!useJobSystem)
-            {
-                for (var i = IsometricObjects.Count - 1; i >= 0; i--)
-                {
-                    var isoObj = IsometricObjects[i];
-                    
-                    if (isoObj == null)
-                    {
-                        IsometricObjects.Remove(isoObj);
-                        continue;
-                    }
-                    
-                    if (!isoObj.gameObject.activeSelf)
-                        continue;
-
-                    for (var j = IsometricObjects.Count - 1; j >= 0; j--)
-                    {
-                        var otherIsoObj = IsometricObjects[j];
-
-                        if (otherIsoObj == null)
-                            IsometricObjects.Remove(otherIsoObj);
-
-                        if (!otherIsoObj.gameObject.activeSelf
-                            || isoObj == otherIsoObj
-                            || !isoObj.IsOverlap(otherIsoObj)
-                            || !isoObj.IsInFrontOf(otherIsoObj))
-                        {
-                            otherIsoObj.RemoveFront(isoObj);
-                            isoObj.RemoveBack(otherIsoObj);
-                            continue;
-                        }
-
-                        otherIsoObj.SetFront(isoObj);
-                        isoObj.SetBack(otherIsoObj);
-                    }
-
-                    // Editor 환경에서 플레이 중이 아닐 때 수동으로 오브젝트를 제거한 경우를 대응하기 위해 수동으로 null 참조를 정리.
-                    if (!Application.isPlaying)
-                    {
-                        foreach (var front in isoObj.Fronts.Where(front => front == null).ToList())
-                            isoObj.RemoveFront(front);
-                
-                        foreach (var back in isoObj.Backs.Where(back => back == null).ToList())
-                            isoObj.RemoveBack(back);                    
-                    }
-
-                    if (isoObj.Backs.Count == 0)
-                        RootObjects.Add(isoObj);
-                    
-                    foreach (var rootBackObj in RootObjects)
-                        InternalSearch(rootBackObj);
-                }
-                
-                var order = 0;
-                while (Sorted.TryPop(out var isoObj))
-                {
-                    isoObj.Order = order;
-                    order++;
-                }
-            }
-            else
-            {
-                var safetyIsoObjects = new List<IsometricObject>(IsometricObjects.Count);
-                
-                foreach (var isoObject in IsometricObjects)
-                {
-                    if (isoObject == null)
-                        continue;
-
-                    isoObject.Fronts.Clear();
-                    isoObject.Backs.Clear();
-                    
-                    if (!isoObject.gameObject.activeSelf)
-                        continue;
-                    
-                    safetyIsoObjects.Add(isoObject);
-                }
-                
-                var isoObjFloorCorners = new NativeArray<Vector3Corners4>(safetyIsoObjects.Count, Allocator.TempJob);
-                var isoObjIsoCorners = new NativeArray<Vector2Corners6>(safetyIsoObjects.Count, Allocator.TempJob);
-                var isoObjTransformAccessArray = new TransformAccessArray(safetyIsoObjects.Count);
-                
-                var frontResults = new NativeMultiHashMap<int, int>(safetyIsoObjects.Count*2, Allocator.TempJob);
-                var backResults = new NativeMultiHashMap<int, int>(safetyIsoObjects.Count*2, Allocator.TempJob);
-                
-                for (var i = 0; i < safetyIsoObjects.Count; i++)
-                {
-                    isoObjFloorCorners[i] = new Vector3Corners4
-                    {
-                        v0 = safetyIsoObjects[i].FloorTopCorner,
-                        v1 = safetyIsoObjects[i].FloorRightCorner,
-                        v2 = safetyIsoObjects[i].FloorBottomCorner,
-                        v3 = safetyIsoObjects[i].FloorLeftCorner,
-                    };
-                    
-                    isoObjIsoCorners[i] = new Vector2Corners6
-                    {
-                        v0 = safetyIsoObjects[i].Corners[0],
-                        v1 = safetyIsoObjects[i].Corners[1],
-                        v2 = safetyIsoObjects[i].Corners[2],
-                        v3 = safetyIsoObjects[i].Corners[3],
-                        v4 = safetyIsoObjects[i].Corners[4],
-                        v5 = safetyIsoObjects[i].Corners[5],
-                    };
-                    
-                    isoObjTransformAccessArray.Add(safetyIsoObjects[i].transform);
-                }
-                
-                var isometricParallelJob = new IsometricParallelJob
-                {
-                    floorCorners = isoObjFloorCorners,
-                    isoCorners = isoObjIsoCorners,
-                    fronts = frontResults.AsParallelWriter(),
-                    backs = backResults.AsParallelWriter()
-                };
-                
-                var jobHandle = isometricParallelJob.Schedule(isoObjTransformAccessArray);
-                jobHandle.Complete();
-                
-                foreach (var keyValue in frontResults)
-                {
-                    var key = keyValue.Key;
-                    var values = frontResults.GetValuesForKey(key);
-                    
-                    foreach (var value in values)
-                        safetyIsoObjects[key].SetFront(safetyIsoObjects[value]);
-                }
-                
-                foreach (var keyValue in backResults)
-                {
-                    var key = keyValue.Key;
-                    var values = backResults.GetValuesForKey(key);
-
-                    foreach (var value in values)
-                        safetyIsoObjects[key].SetBack(safetyIsoObjects[value]);
-                }
-
-                frontResults.Dispose();
-                backResults.Dispose();
-                isoObjTransformAccessArray.Dispose();
-                isoObjIsoCorners.Dispose();
-                isoObjFloorCorners.Dispose();
-                
-                foreach (var isometricObject in safetyIsoObjects.Where(x => x.Backs.Count == 0))
-                    RootObjects.Add(isometricObject);
-                
-                foreach (var rootBackObj in RootObjects)
-                    InternalSearch(rootBackObj);
-                
-                var order = 0;
-                while (Sorted.TryPop(out var isoObj))
-                {
-                    isoObj.Order = order;
-                    order++;
-                }
-            }
-
+            IsometricSorter.SortIsometricObjects(_isometricObjects);
+ 
         #if UNITY_EDITOR
             _sortStopWatch.Stop();
             _sortAccElapsed += _sortStopWatch.Elapsed.Milliseconds;
@@ -367,17 +216,6 @@ namespace Isometric2D
                 _sortCallCount = 0;
             }
         #endif
-        }
-        
-        private void InternalSearch(IsometricObject isometricObject)
-        {
-            if (!_visited.Add(isometricObject))
-                return;
-            
-            foreach (var front in isometricObject.Fronts)
-                InternalSearch(front);
-            
-            Sorted.Push(isometricObject);
         }
     }
 }

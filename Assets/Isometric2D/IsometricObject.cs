@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -10,29 +11,42 @@ namespace Isometric2D
     {
         [SerializeField] private Vector2 extends;
         [SerializeField] private float height;
+        
+        private int _order;
+        private bool _isDirty;
+        private Vector2? _cachedPosition;
+        private Vector2? _cachedExtends;
+        private float _cachedHeight;
+        
+        public float Height => height;
+        public Vector2 Extends => extends;
 
         // Top, Right, Bottom, Left
         private Vector3[] _floorCorners = new Vector3[4];
-
-        public float Height => height;
+        
+        // Top, Right Top, Right Bottom, Bottom, Left Bottom, Left Top
+        public Vector2[] Corners { get; } = new Vector2[6];
+        
+        public int Order
+        {
+            get => _order;
+            set
+            {
+                _order = value;
+                OnChangeOrder?.Invoke(_order);
+            }
+        }
+        
+        public HashSet<IsometricObject> Fronts { get; } = new();
+        public HashSet<IsometricObject> Backs { get; } = new();
+        
         public Vector3 FloorTopCorner => _floorCorners[0];
         public Vector3 FloorRightCorner => _floorCorners[1];
         public Vector3 FloorBottomCorner => _floorCorners[2];
         public Vector3 FloorLeftCorner => _floorCorners[3];
         public Vector3 FloorCenter => (FloorBottomCorner + FloorTopCorner) * 0.5f;
-
-        // Top, Right Top, Right Bottom, Bottom, Left Bottom, Left Top
-        public Vector2[] Corners { get; } = new Vector2[6];
-
-        private Vector2? _cachedPosition;
         
-        public int Order { get; set; }
-
-        public HashSet<IsometricObject> Fronts { get; } = new();
-
-        public HashSet<IsometricObject> Backs { get; } = new();
-
-        public Vector2 Extends => extends;
+        public event Action<int> OnChangeOrder;
         
         private void OnEnable()
         {
@@ -76,7 +90,8 @@ namespace Isometric2D
                     $"[{backObj.name} ▶ {gameObject.name}]", offset);
             }
             
-            var isRoot = isometricWorld.RootObjects.Contains(this);
+            var isRoot = isometricWorld.IsometricSorter is IsometricTopologySorter topologySorter
+                         && topologySorter.RootObjects.Contains(this);
             
             GizmoUtils.DrawText(FloorCenter + Vector3.up * 0.2f, Color.yellow, isRoot ? $"{Order} (Root | {gameObject.name})" : $"{Order}");
         }
@@ -100,20 +115,27 @@ namespace Isometric2D
 
             if (isometricWorld == null)
                 return;
-
-            var isUpdated = false;
             
             if (_cachedPosition != transform.position)
             {
                 _cachedPosition = transform.position;
-                UpdateCorners(isometricWorld);
-                isUpdated = true;
+                _isDirty = true;
+            }
+
+            if (height != _cachedHeight)
+            {
+                _cachedHeight = height;
+                _isDirty = true;
+            }
+
+            if (extends != _cachedExtends)
+            {
+                _cachedExtends = extends;
+                _isDirty = true;
             }
             
-#if UNITY_EDITOR
-            if (!isUpdated)
+            if (_isDirty)
                 UpdateCorners(isometricWorld);
-#endif
         }
         
         public void SetBack(IsometricObject isometricObject)

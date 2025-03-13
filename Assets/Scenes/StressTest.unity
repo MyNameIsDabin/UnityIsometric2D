@@ -5398,8 +5398,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tileWidth: 1
   tileHeight: 0.5
-  useJobSystem: 1
-  sortAvgTime: 3
+  sorterType: 1
+  sortAvgTime: 2.8
   defaultColor: {r: 1, g: 1, b: 1, a: 1}
   linkedColor: {r: 0.46327686, g: 1, b: 0, a: 1}
   arrowColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
