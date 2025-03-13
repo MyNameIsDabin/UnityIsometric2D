@@ -64,11 +64,20 @@ namespace Isometric2D
         }
 
         private void OnDrawGizmos()
-        {  
-            DrawIsometricBody();
-            
-            if (IsometricWorld.Instance is { IsDebugMode: true }) 
+        {
+            if (IsometricWorld.Instance is { IsDebugMode: true })
+            {
                 DrawIsometricGizmoDebug();
+                DrawIsometricBody();
+            }
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            if (IsometricWorld.Instance is { IsDebugMode: false })
+            {
+                DrawIsometricBody();
+            }
         }
 
         private void DrawIsometricGizmoDebug()
@@ -177,7 +186,7 @@ namespace Isometric2D
             if (height > 0)
             {
                 var copied = gizmoColor;
-                copied.a = defaultColor.a * 0.2f;
+                copied.a = defaultColor.a * 0.5f;
                 
                 var topCorners = isometricWorld.GetIsometricCorners(transform.position + Vector3.up * height, extends);
                 isometricWorld.DrawIsometricTile(_floorCorners, copied, gizmoColor, gizmoColor, copied);

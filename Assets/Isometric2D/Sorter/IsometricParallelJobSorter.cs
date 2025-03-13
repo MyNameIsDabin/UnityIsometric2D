@@ -30,8 +30,8 @@ namespace Isometric2D
             var isoObjIsoCorners = new NativeArray<Vector2Corners6>(safetyIsoObjects.Count, Allocator.TempJob);
             var isoObjTransformAccessArray = new TransformAccessArray(safetyIsoObjects.Count);
             
-            var frontResults = new NativeMultiHashMap<int, int>(safetyIsoObjects.Count, Allocator.TempJob);
-            var backResults = new NativeMultiHashMap<int, int>(safetyIsoObjects.Count, Allocator.TempJob);
+            var frontResults = new NativeMultiHashMap<int, int>(safetyIsoObjects.Count * 10, Allocator.TempJob);
+            var backResults = new NativeMultiHashMap<int, int>(safetyIsoObjects.Count * 10, Allocator.TempJob);
             
             for (var i = 0; i < safetyIsoObjects.Count; i++)
             {
