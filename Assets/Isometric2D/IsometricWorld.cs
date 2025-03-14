@@ -14,7 +14,7 @@ namespace Isometric2D
         [SerializeField] private IsometricSorterType sorterType = IsometricSorterType.JobSystem;
         
         [Header("Gizmo Settings")] 
-        [SerializeField] private float sortAvgTime;
+        [SerializeField] private float avgTimePer10Calls;
         [SerializeField] private Color defaultColor = Color.white;
         [SerializeField] private Color linkedColor = Color.green;
         [SerializeField] private Color arrowColor = Color.yellow;
@@ -211,7 +211,7 @@ namespace Isometric2D
 
             if (_sortCallCount >= 10)
             {
-                sortAvgTime = _sortAccElapsed / _sortCallCount;   
+                avgTimePer10Calls = _sortAccElapsed / _sortCallCount;   
                 _sortAccElapsed = 0;
                 _sortCallCount = 0;
             }

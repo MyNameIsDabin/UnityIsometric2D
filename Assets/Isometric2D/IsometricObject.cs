@@ -45,6 +45,7 @@ namespace Isometric2D
         public Vector3 FloorBottomCorner => _floorCorners[2];
         public Vector3 FloorLeftCorner => _floorCorners[3];
         public Vector3 FloorCenter => (FloorBottomCorner + FloorTopCorner) * 0.5f;
+        public Vector2[] Floors => _floorCorners.Select(c => new Vector2(c.x, c.y)).ToArray();
         
         public event Action<int> OnChangeOrder;
         

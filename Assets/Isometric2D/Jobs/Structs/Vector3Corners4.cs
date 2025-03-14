@@ -10,6 +10,10 @@ namespace Isometric2D.Jobs.Structs
         public Vector3 v2;
         public Vector3 v3;
         
+        public const int Length = 4;
+        
+        public Vector3 FloorCenter => (v2 + v1) * 0.5f;
+        
         public Vector3[] Corners => new[]
         {
             v0, v1, v2, v3

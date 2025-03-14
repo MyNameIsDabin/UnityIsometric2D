@@ -8,21 +8,27 @@ namespace Isometric2D
         {
             if (obj2.FloorTopCorner.x < obj1.FloorBottomCorner.x)
             {
-                var dire = (obj2.FloorRightCorner - obj2.FloorTopCorner).normalized;
+                var topToRight = obj2.FloorRightCorner - obj2.FloorTopCorner;
+                var topToObj1Left = obj1.FloorLeftCorner - obj2.FloorTopCorner;
             
                 // 오른쪽 모서리 뒤쪽에 위치한 벡터는 뒤로 판단 
-                if (Cross(dire, (obj1.FloorBottomCorner - obj2.FloorTopCorner).normalized) >= 0)
+                if (Cross(topToRight.normalized, topToObj1Left.normalized) >= 0)
                     return false;
             }
             else
             {
-                var dire = (obj2.FloorLeftCorner - obj2.FloorTopCorner).normalized;
-            
-                // 왼쪽 모서리 뒤쪽에 위치한 벡터는 뒤로 판단 
-                if (Cross(dire, (obj1.FloorBottomCorner - obj2.FloorTopCorner).normalized) <= 0)
+                var topToLeft = obj2.FloorLeftCorner - obj2.FloorTopCorner;
+                var topToObj1Right = obj1.FloorRightCorner - obj2.FloorTopCorner;
+                
+                // 왼쪽 모서리 뒤쪽에 위치한 벡터는 뒤로 판단
+                if (Cross(topToLeft.normalized, topToObj1Right.normalized) <= 0)
                     return false;
             }
             
+            // 바닥 안쪽 면으로 들어왔는지 한번 더 확인
+            if (IsPolygonsOverlap(obj1.Floors, obj2.Floors))
+                return obj1.FloorCenter.y < obj2.FloorCenter.y;
+
             return true;
         }
         
