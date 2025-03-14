@@ -11,6 +11,8 @@ Unity에서 2D 환경에서의 isometric뷰에서의 오브젝트 정렬 문제�
 ### 사용 방법
 ![](https://github.com/MyNameIsDabin/UnityIsometric2D/blob/master/Guide1.png)
 
+Release탭에서 유니티 패키지 파일을 받거나 프로젝트 저장소를 clone으로 받은 후 유니티로 열어 프로젝트를 참고합니다.
+
 - IsometricSortingGroup
 - IsometricSpriteRenderer
 
