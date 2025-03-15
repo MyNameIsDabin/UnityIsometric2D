@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SpriteAtlas
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: 6aaa584498d141347ae279e2b9166123, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - 816d253348c1f4f488df7bc371eec3d7: 21300000
+    - 59f188f71a4433a49bf0bfcab97f58fb: 21300000
+    - 0deb61b9cf4cba043ba1978b3229d742: 21300000
+    - 57d444e964bc81b49ac3a07f77c1bf89: 21300000
+    - 7568df6ae06c93e4c84cda189d3e8de3: 21300000
+    - c317f15cc60bd0848acd8a1d08e0c1f3: 21300000
+    - da0b237ec93aa9b41bd3d694b9cee6f9: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 816d253348c1f4f488df7bc371eec3d7, type: 3}
+  - {fileID: 21300000, guid: 59f188f71a4433a49bf0bfcab97f58fb, type: 3}
+  - {fileID: 21300000, guid: 0deb61b9cf4cba043ba1978b3229d742, type: 3}
+  - {fileID: 21300000, guid: 57d444e964bc81b49ac3a07f77c1bf89, type: 3}
+  - {fileID: 21300000, guid: 7568df6ae06c93e4c84cda189d3e8de3, type: 3}
+  - {fileID: 21300000, guid: c317f15cc60bd0848acd8a1d08e0c1f3, type: 3}
+  - {fileID: 21300000, guid: da0b237ec93aa9b41bd3d694b9cee6f9, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - isoChest
+  - isorock2
+  - isobed2
+  - IsoPillar2
+  - isobrickswall4
+  - IsoBarrel
+  - isobrickswall2
+  m_RenderDataMap: {}
+  m_Tag: SpriteAtlas
+  m_IsVariant: 0
