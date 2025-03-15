@@ -52,6 +52,7 @@ namespace Isometric2D
         private void OnEnable()
         {
             IsometricWorld.Instance.AddIsometricObject(this);
+            _isDirty = true;
         }
 
         private void OnValidate()
