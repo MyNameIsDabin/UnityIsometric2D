@@ -66,19 +66,19 @@ namespace Isometric2D
 
         private void OnDrawGizmos()
         {
-            if (IsometricWorld.Instance is { IsDebugMode: true })
-            {
-                DrawIsometricGizmoDebug();
-                DrawIsometricBody();
-            }
+            if (IsometricWorld.Instance == null || !IsometricWorld.Instance.IsDebugMode) 
+                return;
+            
+            DrawIsometricGizmoDebug();
+            DrawIsometricBody();
         }
 
         private void OnDrawGizmosSelected()
         {
-            if (IsometricWorld.Instance is { IsDebugMode: false })
-            {
-                DrawIsometricBody();
-            }
+            if (IsometricWorld.Instance != null && IsometricWorld.Instance.IsDebugMode) 
+                return;
+            
+            DrawIsometricBody();
         }
 
         private void DrawIsometricGizmoDebug()

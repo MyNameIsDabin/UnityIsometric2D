@@ -10,7 +10,7 @@ namespace Isometric2D
     {
         [Header("Isometric Settings")] 
         [SerializeField] private float tileWidth = 1f;
-        [SerializeField] private float tileHeight = 0.5f;
+        [SerializeField] private float tileHeight = 0.57735f;
         [SerializeField] private IsometricSorterType sorterType = IsometricSorterType.JobSystem;
         
         [Header("Gizmo Settings")] 
@@ -25,6 +25,9 @@ namespace Isometric2D
         private Vector2 _cachedDirectionToLeftTop;
         private Vector2 _cachedDirectionToLeftBottom;
         private Vector2 _cachedDirectionToRightBottom;
+        private float _cachedTileWidth;
+        private float _cachedTileHeight;
+        
         private int _sortCallCount;
         private float _sortAccElapsed;
         private IIsometricSorter _isometricSorter;
@@ -45,7 +48,7 @@ namespace Isometric2D
             get
             {
                 var willBeUpdated = _isometricSorter == null || _cachedIsometricSorterType != sorterType;
-
+                
                 if (willBeUpdated)
                 {
                     _cachedIsometricSorterType = sorterType;
@@ -80,8 +83,6 @@ namespace Isometric2D
         private void Awake()
         {
             _instance = this;
-            
-            Application.targetFrameRate = 60;
         }
 
         private void Update()
@@ -111,8 +112,17 @@ namespace Isometric2D
             get
             {
                 if (_cachedIsometricIdentityCorners == default
-                    || _cachedIsometricIdentityCorners.Length == 0)
+                    || _cachedIsometricIdentityCorners.Length == 0
+                    || _cachedTileWidth != tileWidth
+                    || _cachedTileHeight != tileHeight)
                 {
+                    _cachedTileWidth = tileWidth;
+                    _cachedTileHeight = tileHeight;
+                    _cachedDirectionToRightTop = default;
+                    _cachedDirectionToLeftTop = default;
+                    _cachedDirectionToLeftBottom = default;
+                    _cachedDirectionToRightBottom = default;
+                    
                     _cachedIsometricIdentityCorners = new[]
                     {
                         new Vector2(0, tileHeight / 2f), // Top
