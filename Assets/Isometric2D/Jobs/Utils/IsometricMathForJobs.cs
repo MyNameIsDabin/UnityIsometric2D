@@ -26,9 +26,12 @@ namespace Isometric2D
                 if (Cross(new Vector2(dire1.x, dire1.y), new Vector2(dire2.x, dire2.y)) <= 0)
                     return false;
             }
-            
+
             if (IsPolygonsOverlap(obj1, obj2))
-                return obj1.FloorCenter.y < obj2.FloorCenter.y;
+            {
+                return IsPointInPolygon(obj1[2], obj2) == false
+                       && IsPointInPolygon(obj1[0], obj2);
+            }
             
             return true;
         }

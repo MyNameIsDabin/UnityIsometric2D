@@ -27,7 +27,10 @@ namespace Isometric2D
             
             // 바닥 안쪽 면으로 들어왔는지 한번 더 확인
             if (IsPolygonsOverlap(obj1.Floors, obj2.Floors))
-                return obj1.FloorCenter.y < obj2.FloorCenter.y;
+            {
+                return IsPointInPolygon(obj1.Floors[2], obj2.Floors) == false
+                       && IsPointInPolygon(obj1.Floors[0], obj2.Floors);
+            }
 
             return true;
         }
