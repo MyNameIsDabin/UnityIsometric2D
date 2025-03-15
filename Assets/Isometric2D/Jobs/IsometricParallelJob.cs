@@ -9,7 +9,7 @@ namespace Isometric2D
     public struct IsometricParallelJob : IJobParallelForTransform
     {
         [ReadOnly]
-        public NativeArray<Vector3Corners4> floorCorners;
+        public NativeArray<Vector2Corners4> floorCorners;
         [ReadOnly]
         public NativeArray<Vector2Corners6> isoCorners;
         

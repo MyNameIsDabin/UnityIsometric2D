@@ -8,7 +8,7 @@ namespace Isometric2D
     [BurstCompile]
     public static class IsometricMathForJobs
     {
-        public static bool IsInFrontOf(Vector3Corners4 obj1, Vector3Corners4 obj2)
+        public static bool IsInFrontOf(Vector2Corners4 obj1, Vector2Corners4 obj2)
         {
             if (obj2[0].x < obj1[2].x)
             {
@@ -33,20 +33,20 @@ namespace Isometric2D
             return true;
         }
 
-        public static bool IsPolygonsOverlap(Vector3Corners4 polygon1, Vector3Corners4 polygon2)
+        public static bool IsPolygonsOverlap(Vector2Corners4 polygon1, Vector2Corners4 polygon2)
         {
             if (!IsAABBOverlap(polygon1, polygon2))
                 return false;
             
-            for (var i = 0; i < Vector3Corners4.Length; i++)
+            for (var i = 0; i < Vector2Corners4.Length; i++)
             {
                 var p1 = polygon1[i];
-                var p2 = polygon1[(i + 1) % Vector3Corners4.Length];
+                var p2 = polygon1[(i + 1) % Vector2Corners4.Length];
         
-                for (var j = 0; j < Vector3Corners4.Length; j++)
+                for (var j = 0; j < Vector2Corners4.Length; j++)
                 {
                     var q1 = polygon2[j];
-                    var q2 = polygon2[(j + 1) % Vector3Corners4.Length];
+                    var q2 = polygon2[(j + 1) % Vector2Corners4.Length];
         
                     if (LineSegmentsIntersect(p1, p2, q1, q2))
                         return true;
@@ -79,7 +79,7 @@ namespace Isometric2D
             return IsPointInPolygon(polygon1[0], polygon2) || IsPointInPolygon(polygon2[0], polygon1);
         }
         
-        private static bool IsAABBOverlap(Vector3Corners4 polygon1, Vector3Corners4 polygon2)
+        private static bool IsAABBOverlap(Vector2Corners4 polygon1, Vector2Corners4 polygon2)
         {
             var bounds1 = GetPolygonBounds(polygon1);
             var bounds2 = GetPolygonBounds(polygon2);
@@ -95,14 +95,14 @@ namespace Isometric2D
             return bounds1.Overlaps(bounds2);
         }
 
-        private static Rect GetPolygonBounds(Vector3Corners4 polygon)
+        private static Rect GetPolygonBounds(Vector2Corners4 polygon)
         {
             var minX = polygon[0].x;
             var maxX = polygon[0].x;
             var minY = polygon[0].y;
             var maxY = polygon[0].y;
         
-            for (var i = 1; i < Vector3Corners4.Length; i++)
+            for (var i = 1; i < Vector2Corners4.Length; i++)
             {
                 var x = polygon[i].x;
                 var y = polygon[i].y;
@@ -173,10 +173,10 @@ namespace Isometric2D
             return t is >= 0 and <= 1 && u is >= 0 and <= 1;
         }
 
-        private static bool IsPointInPolygon(Vector2 point, Vector3Corners4 polygon)
+        private static bool IsPointInPolygon(Vector2 point, Vector2Corners4 polygon)
         {
             var inside = false;
-            var n = Vector3Corners4.Length;
+            var n = Vector2Corners4.Length;
         
             for (int i = 0, j = n - 1; i < n; j = i++)
             {

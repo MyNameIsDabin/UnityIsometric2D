@@ -26,7 +26,7 @@ namespace Isometric2D
                 safetyIsoObjects.Add(isoObject);
             }
             
-            var isoObjFloorCorners = new NativeArray<Vector3Corners4>(safetyIsoObjects.Count, Allocator.TempJob);
+            var isoObjFloorCorners = new NativeArray<Vector2Corners4>(safetyIsoObjects.Count, Allocator.TempJob);
             var isoObjIsoCorners = new NativeArray<Vector2Corners6>(safetyIsoObjects.Count, Allocator.TempJob);
             var isoObjTransformAccessArray = new TransformAccessArray(safetyIsoObjects.Count);
             
@@ -35,7 +35,7 @@ namespace Isometric2D
             
             for (var i = 0; i < safetyIsoObjects.Count; i++)
             {
-                isoObjFloorCorners[i] = new Vector3Corners4
+                isoObjFloorCorners[i] = new Vector2Corners4
                 {
                     v0 = safetyIsoObjects[i].FloorTopCorner,
                     v1 = safetyIsoObjects[i].FloorRightCorner,

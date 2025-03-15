@@ -22,10 +22,10 @@ namespace Isometric2D
         public Vector2 Extends => extends;
 
         // Top, Right, Bottom, Left
-        private Vector3[] _floorCorners = new Vector3[4];
+        private Vector2[] _floorCorners = new Vector2[4];
         
         // Top, Right Top, Right Bottom, Bottom, Left Bottom, Left Top
-        public Vector2[] Corners { get; } = new Vector2[6];
+        public Vector2[] Corners { get; private set; } = new Vector2[6];
         
         public int Order
         {
@@ -108,15 +108,17 @@ namespace Isometric2D
 
         private void UpdateCorners(IsometricWorld isometricWorld)
         {
-            _floorCorners = isometricWorld.GetIsometricCorners(transform.position, extends);
+            Corners = isometricWorld.GetIsometricCubeWorldCorners(transform.position, extends, height, transform.lossyScale);
 
-            var virtualHeight = Vector3.up * height;
-            Corners[0] = _floorCorners[0] + virtualHeight; // Top
-            Corners[1] = _floorCorners[1] + virtualHeight; // Right Top
-            Corners[2] = _floorCorners[1]; // Right Bottom
-            Corners[3] = _floorCorners[2]; // Bottom
-            Corners[4] = _floorCorners[3]; // Left Bottom
-            Corners[5] = _floorCorners[3] + virtualHeight; // Left Top
+            var virtualHeight = Vector2.up * height;
+            
+            _floorCorners = new[]
+            {
+                Corners[0] - virtualHeight,
+                Corners[1] - virtualHeight,
+                Corners[3],
+                Corners[4]
+            };
         }
 
         private void Update()
@@ -188,8 +190,12 @@ namespace Isometric2D
             {
                 var copied = gizmoColor;
                 copied.a = defaultColor.a * 0.5f;
-                
-                var topCorners = isometricWorld.GetIsometricCorners(transform.position + Vector3.up * height, extends);
+
+                var topCorners = new[]
+                {
+                    Corners[0], Corners[1], Corners[3] + Vector2.up * height, Corners[4] + Vector2.up * height
+                };
+
                 isometricWorld.DrawIsometricTile(_floorCorners, copied, gizmoColor, gizmoColor, copied);
                 isometricWorld.DrawIsometricTile(topCorners);
 

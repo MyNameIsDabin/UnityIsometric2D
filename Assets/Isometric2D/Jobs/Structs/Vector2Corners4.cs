@@ -3,23 +3,23 @@
 namespace Isometric2D.Jobs.Structs
 {
     [System.Serializable]
-    public struct Vector3Corners4
+    public struct Vector2Corners4
     {
-        public Vector3 v0;
-        public Vector3 v1;
-        public Vector3 v2;
-        public Vector3 v3;
+        public Vector2 v0;
+        public Vector2 v1;
+        public Vector2 v2;
+        public Vector2 v3;
         
         public const int Length = 4;
         
-        public Vector3 FloorCenter => (v2 + v1) * 0.5f;
+        public Vector2 FloorCenter => (v2 + v1) * 0.5f;
         
-        public Vector3[] Corners => new[]
+        public Vector2[] Corners => new[]
         {
             v0, v1, v2, v3
         };
         
-        public Vector3 this[int index]
+        public Vector2 this[int index]
         {
             get
             {

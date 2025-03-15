@@ -20,11 +20,11 @@ namespace Isometric2D
         [SerializeField] private Color arrowColor = Color.yellow;
         [SerializeField] private bool debugMode = false;
         
-        private Vector3[] _cachedIsometricIdentityCorners;
-        private Vector3 _cachedDirectionToRightTop;
-        private Vector3 _cachedDirectionToLeftTop;
-        private Vector3 _cachedDirectionToLeftBottom;
-        private Vector3 _cachedDirectionToRightBottom;
+        private Vector2[] _cachedIsometricIdentityCorners;
+        private Vector2 _cachedDirectionToRightTop;
+        private Vector2 _cachedDirectionToLeftTop;
+        private Vector2 _cachedDirectionToLeftBottom;
+        private Vector2 _cachedDirectionToRightBottom;
         private int _sortCallCount;
         private float _sortAccElapsed;
         private IIsometricSorter _isometricSorter;
@@ -106,7 +106,7 @@ namespace Isometric2D
             _isometricObjects.Remove(isometricObject);
         }
 
-        public Vector3[] IsometricIdentityCorners
+        public Vector2[] IsometricIdentityCorners
         {
             get
             {
@@ -115,10 +115,10 @@ namespace Isometric2D
                 {
                     _cachedIsometricIdentityCorners = new[]
                     {
-                        new Vector3(0, tileHeight / 2f, 0), // Top
-                        new Vector3(tileWidth / 2f, 0, 0), // Right
-                        new Vector3(0, -tileHeight / 2f, 0), // Bottom
-                        new Vector3(-tileWidth / 2f, 0, 0) // Left
+                        new Vector2(0, tileHeight / 2f), // Top
+                        new Vector2(tileWidth / 2f, 0), // Right
+                        new Vector2(0, -tileHeight / 2f), // Bottom
+                        new Vector2(-tileWidth / 2f, 0) // Left
                     };
                 }
 
@@ -126,7 +126,7 @@ namespace Isometric2D
             }
         }
 
-        public Vector3 IsoIdentityDirectionToRightTop
+        public Vector2 IsoIdentityDirectionToRightTop
         {
             get
             {
@@ -136,7 +136,7 @@ namespace Isometric2D
             }
         }
 
-        public Vector3 IsoIdentityDirectionToLeftTop
+        public Vector2 IsoIdentityDirectionToLeftTop
         {
             get
             {
@@ -146,7 +146,7 @@ namespace Isometric2D
             }
         }
 
-        public Vector3 IsoIdentityDirectionToLeftBottom
+        public Vector2 IsoIdentityDirectionToLeftBottom
         {
             get
             {
@@ -156,7 +156,7 @@ namespace Isometric2D
             }
         }
 
-        public Vector3 IsoIdentityDirectionToRightBottom
+        public Vector2 IsoIdentityDirectionToRightBottom
         {
             get
             {
@@ -165,23 +165,54 @@ namespace Isometric2D
                 return _cachedDirectionToRightBottom;
             }
         }
-
-        public Vector3[] GetIsometricCorners(Vector3 worldPosition, Vector2 extends)
+        
+        public Vector2[] GetIsometricCubeWorldCorners(Vector2 worldPosition, Vector2 extends, float height, Vector2? lossyScale = null)
         {
             var extendToRightTop = IsoIdentityDirectionToRightTop * (extends[0] - 1.0f);
             var extendToLeftTop = IsoIdentityDirectionToLeftTop * (extends[1] - 1.0f);
             var identity = IsometricIdentityCorners;
 
+            // Floor
+            var floorTop = identity[0] + extendToRightTop + extendToLeftTop;
+            var floorRight = identity[1] + extendToRightTop;
+            var floorBottom = identity[2];
+            var floorLeft = identity[3] + extendToLeftTop;
+            
+            height = lossyScale.HasValue ? Mathf.Abs(lossyScale.Value.y) * height : height;
+            
+            // Cube
+            var virtualHeight = Vector2.up * height;
+            
+            if (lossyScale.HasValue)
+            {
+                floorTop *= lossyScale.Value;
+                floorRight *= lossyScale.Value;
+                floorLeft *= lossyScale.Value;
+                floorBottom *= lossyScale.Value;
+
+                if (floorRight.x < floorLeft.x)
+                    (floorLeft, floorRight) = (floorRight, floorLeft);
+            }
+            
+            var top = worldPosition + floorTop + virtualHeight;
+            var rightTop =  worldPosition + floorRight + virtualHeight;
+            var rightBottom = worldPosition + floorRight;
+            var bottom = worldPosition + floorBottom;
+            var leftBottom =  worldPosition + floorLeft;
+            var leftTop =  worldPosition + floorLeft + virtualHeight;
+
             return new[]
             {
-                identity[0] + worldPosition + extendToRightTop + extendToLeftTop, // Top
-                identity[1] + worldPosition + extendToRightTop, // Right
-                identity[2] + worldPosition, // Bottom
-                identity[3] + worldPosition + extendToLeftTop // Left
+                top,
+                rightTop,
+                rightBottom,
+                bottom,
+                leftBottom,
+                leftTop,
             };
         }
 
-        public void DrawIsometricTile(Vector3[] vertices, params Color[] colors)
+        public void DrawIsometricTile(Vector2[] vertices, params Color[] colors)
         {
             var previousColor = Gizmos.color;
 
