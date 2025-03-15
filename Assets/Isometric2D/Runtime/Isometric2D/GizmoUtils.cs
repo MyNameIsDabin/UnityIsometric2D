@@ -55,7 +55,7 @@ namespace Isometric2D
                 
                 Handles.Label(new Vector2(end.x, end.y) + (nameOffset ?? new Vector2(0.1f, 0.3f)), name, style);
             }
+#endif
         }
-        #endif
     }
 }
