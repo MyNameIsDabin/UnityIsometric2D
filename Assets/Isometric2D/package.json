@@ -15,6 +15,13 @@
       "email": "dorothy9795@gmail.com",
       "url": "https://github.com/MyNameIsDabin/UnityIsometric2D"
     },
+    "samples": [
+      {
+        "displayName": "Basic Example",
+        "description": "A basic example demonstrating isometric 2.5D object alignment.",
+        "path": "Samples~/Demo"
+      }
+    ],
     "dependencies": {
     },
     "keywords": [
