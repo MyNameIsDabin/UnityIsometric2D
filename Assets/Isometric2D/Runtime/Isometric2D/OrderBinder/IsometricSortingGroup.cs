@@ -25,7 +25,7 @@ namespace Isometric2D
 
         private void Awake()
         {
-            _spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+            _spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
         }
         
         protected override void OnChangeOrder(int order)
@@ -35,7 +35,9 @@ namespace Isometric2D
 
         protected override bool OnShouldIgnoreSort()
         {
-            return !gameObject.activeSelf || _spriteRenderers.All(x => !x.isVisible);
+            var isNotVisible = _spriteRenderers.Length > 0 && _spriteRenderers.All(x => !x.isVisible);
+            
+            return !gameObject.activeSelf || isNotVisible;
         }
     }
 }
