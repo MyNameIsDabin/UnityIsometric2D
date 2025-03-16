@@ -26,7 +26,7 @@ namespace Isometric2D
         
         protected override bool OnShouldIgnoreSort()
         {
-            return gameObject.activeSelf && SpriteRenderer.isVisible;
+            return !gameObject.activeSelf || !SpriteRenderer.isVisible;
         }
     }
 }

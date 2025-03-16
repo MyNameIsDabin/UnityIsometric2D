@@ -35,7 +35,7 @@ namespace Isometric2D
 
         protected override bool OnShouldIgnoreSort()
         {
-            return gameObject.activeSelf && _spriteRenderers.Any(x => x.isVisible);
+            return !gameObject.activeSelf || _spriteRenderers.Any(x => !x.isVisible);
         }
     }
 }
