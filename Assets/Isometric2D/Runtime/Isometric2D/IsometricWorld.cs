@@ -12,6 +12,7 @@ namespace Isometric2D
         [SerializeField] private float tileWidth = 1f;
         [SerializeField] private float tileHeight = 0.57735f;
         [SerializeField] private IsometricSorterType sorterType = IsometricSorterType.JobSystem;
+        [SerializeField] private bool culling;
         
         [Header("Gizmo Settings")] 
         [SerializeField] private float avgTimePer10Calls;
@@ -259,12 +260,27 @@ namespace Isometric2D
             _sortCallCount++;
             _sortStopWatch.Restart();
         #endif
-            
-            var cullObjects = _isometricObjects.Where(x => x.ShouldIgnoreSort == false).ToList();
-            IsometricSorter.SortIsometricObjects(cullObjects);
- 
+
+            if (culling)
+            {
+                var culledObjects = _isometricObjects
+                    .Where(x => x.ShouldIgnoreSort == false)
+                    .ToList();
+                
         #if UNITY_EDITOR
-            sortedObjectCount = cullObjects.Count;
+                sortedObjectCount = culledObjects.Count;
+        #endif   
+                IsometricSorter.SortIsometricObjects(culledObjects);
+            }
+            else
+            {
+        #if UNITY_EDITOR
+                sortedObjectCount = _isometricObjects.Count;
+        #endif
+                IsometricSorter.SortIsometricObjects(_isometricObjects);
+            }
+            
+        #if UNITY_EDITOR
             _sortStopWatch.Stop();
             _sortAccElapsed += _sortStopWatch.Elapsed.Milliseconds;
 
