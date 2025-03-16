@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
@@ -47,7 +48,7 @@ namespace Isometric2D
         public Vector3 FloorCenter => (FloorBottomCorner + FloorTopCorner) * 0.5f;
         public Vector2[] Floors => _floorCorners.Select(c => new Vector2(c.x, c.y)).ToArray();
 
-        public bool ShouldIgnoreSort => OnShouldIgnoreSort?.Invoke() ?? false;
+        public bool ShouldIgnoreSort => OnShouldIgnoreSort?.Invoke() ?? true;
         
         public event Action<int> OnChangeOrder;
         public event Action OnUpdateCorners;
@@ -67,7 +68,8 @@ namespace Isometric2D
 
         private void OnDisable()
         {
-            IsometricWorld.Instance.RemoveIsometricObject(this);
+            if (Application.IsPlaying(gameObject))
+                IsometricWorld.Instance.RemoveIsometricObject(this);
         }
 
         private void OnDrawGizmos()

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Isometric2D
 {
@@ -16,6 +15,7 @@ namespace Isometric2D
         
         [Header("Gizmo Settings")] 
         [SerializeField] private float avgTimePer10Calls;
+        [SerializeField] private int sortedObjectCount;
         [SerializeField] private Color defaultColor = Color.white;
         [SerializeField] private Color linkedColor = Color.green;
         [SerializeField] private Color arrowColor = Color.yellow;
@@ -66,24 +66,39 @@ namespace Isometric2D
         {
             get
             {
+                #if UNITY_EDITOR
+                if (_instance != null && _instance.gameObject.scene.IsValid())
+                    return _instance;
+                _instance = FindObjectsOfType<IsometricWorld>()
+                    .FirstOrDefault(x => x.gameObject.scene.IsValid());
+                #else
                 if (_instance != null)
                     return _instance;
-
                 _instance = FindObjectOfType<IsometricWorld>();
+                #endif
 
                 if (_instance != null)
                     return _instance;
 
                 var inst = new GameObject("Isometric World").AddComponent<IsometricWorld>();
-
-                Debug.Log("Isometric World Created.", inst);
                 return inst;
             }
         }
 
         private void Awake()
         {
+            if ((_instance != null && _instance != this))
+            {
+                Destroy(gameObject);
+                return;
+            }
+            
             _instance = this;
+        }
+
+        private void OnDestroy()
+        {
+            _instance = null;
         }
 
         private void Update()
@@ -245,9 +260,11 @@ namespace Isometric2D
             _sortStopWatch.Restart();
         #endif
             
-            IsometricSorter.SortIsometricObjects(_isometricObjects.Where(x => x.ShouldIgnoreSort == false).ToList());
+            var cullObjects = _isometricObjects.Where(x => x.ShouldIgnoreSort == false).ToList();
+            IsometricSorter.SortIsometricObjects(cullObjects);
  
         #if UNITY_EDITOR
+            sortedObjectCount = cullObjects.Count;
             _sortStopWatch.Stop();
             _sortAccElapsed += _sortStopWatch.Elapsed.Milliseconds;
 

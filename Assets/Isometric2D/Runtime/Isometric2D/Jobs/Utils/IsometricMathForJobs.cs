@@ -1,6 +1,5 @@
 ﻿using Isometric2D.Jobs.Structs;
 using Unity.Burst;
-using Unity.Mathematics;
 using UnityEngine;
 
 namespace Isometric2D
@@ -12,18 +11,18 @@ namespace Isometric2D
         {
             if (obj2[0].x < obj1[2].x)
             {
-                var dire1 = math.normalize(obj2[1] - obj2[0]);
-                var dire2 = math.normalize(obj1[2] - obj2[0]);
+                var dire1 = obj2[1] - obj2[0];
+                var dire2 = obj1[3] - obj2[0];
             
-                if (Cross(new Vector2(dire1.x, dire1.y), new Vector2(dire2.x, dire2.y)) >= 0)
+                if (Cross(dire1.normalized, dire2.normalized) >= 0)
                     return false;
             }
             else
             {
-                var dire1 = math.normalize(obj2[3] - obj2[0]);
-                var dire2 = math.normalize(obj1[2] - obj2[0]);
+                var dire1 = obj2[3] - obj2[0];
+                var dire2 = obj1[1] - obj2[0];
                 
-                if (Cross(new Vector2(dire1.x, dire1.y), new Vector2(dire2.x, dire2.y)) <= 0)
+                if (Cross(dire1.normalized, dire2.normalized) <= 0)
                     return false;
             }
 
