@@ -46,8 +46,13 @@ namespace Isometric2D
         public Vector3 FloorLeftCorner => _floorCorners[3];
         public Vector3 FloorCenter => (FloorBottomCorner + FloorTopCorner) * 0.5f;
         public Vector2[] Floors => _floorCorners.Select(c => new Vector2(c.x, c.y)).ToArray();
+
+        public bool ShouldIgnoreSort => OnShouldIgnoreSort?.Invoke() ?? false;
         
         public event Action<int> OnChangeOrder;
+        public event Action OnUpdateCorners;
+
+        public Func<bool> OnShouldIgnoreSort;
         
         private void OnEnable()
         {
@@ -146,9 +151,13 @@ namespace Isometric2D
                 _cachedExtends = extends;
                 _isDirty = true;
             }
-            
+
             if (_isDirty)
+            {
+                _isDirty = false;
                 UpdateCorners(isometricWorld);
+                OnUpdateCorners?.Invoke();
+            }
         }
         
         public void SetBack(IsometricObject isometricObject)

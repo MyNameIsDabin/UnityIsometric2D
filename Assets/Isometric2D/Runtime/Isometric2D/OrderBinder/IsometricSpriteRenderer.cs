@@ -23,5 +23,10 @@ namespace Isometric2D
         {
             SpriteRenderer.sortingOrder = order;
         }
+        
+        protected override bool OnShouldIgnoreSort()
+        {
+            return gameObject.activeSelf && SpriteRenderer.isVisible;
+        }
     }
 }

@@ -245,7 +245,7 @@ namespace Isometric2D
             _sortStopWatch.Restart();
         #endif
             
-            IsometricSorter.SortIsometricObjects(_isometricObjects);
+            IsometricSorter.SortIsometricObjects(_isometricObjects.Where(x => x.ShouldIgnoreSort == false).ToList());
  
         #if UNITY_EDITOR
             _sortStopWatch.Stop();
