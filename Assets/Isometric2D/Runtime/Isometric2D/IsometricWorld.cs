@@ -85,6 +85,8 @@ namespace Isometric2D
                 return inst;
             }
         }
+        
+        public static bool HasInstance => _instance != null;
 
         private void Awake()
         {

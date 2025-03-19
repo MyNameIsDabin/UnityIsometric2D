@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
@@ -68,7 +67,7 @@ namespace Isometric2D
 
         private void OnDisable()
         {
-            if (Application.IsPlaying(gameObject))
+            if (IsometricWorld.HasInstance)
                 IsometricWorld.Instance.RemoveIsometricObject(this);
         }
 
