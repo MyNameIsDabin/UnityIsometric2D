@@ -1,7 +1,7 @@
 {
     "name": "com.davin.isometric2d",
     "displayName": "Isometric2D",
-    "version": "1.0.7",                
+    "version": "1.0.71",                
     "unity": "2021.3",                 
     "description": "A plugin that supports isometric 2.5D object alignment.",
     "licenses": [
