@@ -9,7 +9,10 @@ namespace Isometric2D
     {
         public static bool IsInFrontOf(Vector2Corners4 obj1, Vector2Corners4 obj2)
         {
-            var range = (obj1[0].y - obj1[2].y) + (obj2[0].y - obj2[2].y);
+            var range = obj1[0].y > obj2[0].y
+                ? obj1[0].y - obj2[2].y
+                : obj2[0].y - obj1[2].y;
+            
             var downVector = Vector2.down * range;
             
             if (obj1[3].x > obj2[3].x && obj1[1].x < obj2[1].x)
