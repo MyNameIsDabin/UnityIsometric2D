@@ -111,6 +111,17 @@ namespace Isometric2D
                          && topologySorter.RootObjects.Contains(this);
             
             GizmoUtils.DrawText(FloorCenter + Vector3.up * 0.2f, Color.yellow, isRoot ? $"{Order} (Root | {gameObject.name})" : $"{Order}");
+            
+            if (ShouldIgnoreSort)
+            {
+                GizmoUtils.DrawText(FloorCenter, 
+                    Color.cyan, "Ignored");
+            }
+            else
+            {
+                GizmoUtils.DrawText(FloorCenter, 
+                    Color.cyan, "No");   
+            }
         }
 
         private void UpdateCorners(IsometricWorld isometricWorld)

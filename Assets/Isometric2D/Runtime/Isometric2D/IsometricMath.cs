@@ -6,35 +6,74 @@ namespace Isometric2D
     {
         public static bool IsInFrontOf(this IsometricObject obj1, IsometricObject obj2)
         {
-            if (obj2.FloorTopCorner.x < obj1.FloorBottomCorner.x)
-            {
-                var topToRight = obj2.FloorRightCorner - obj2.FloorTopCorner;
-                var topToObj1Left = obj1.FloorLeftCorner - obj2.FloorTopCorner;
+            var range = (obj1.FloorTopCorner.y - obj1.FloorBottomCorner.y) + (obj2.FloorTopCorner.y - obj2.FloorBottomCorner.y);
+            var downVector = Vector2.down * range;
             
-                // 오른쪽 모서리 뒤쪽에 위치한 벡터는 뒤로 판단 
-                if (Cross(topToRight.normalized, topToObj1Left.normalized) >= 0)
+            // 수직선상 교차 체크는 범위 안쪽으로 객체가 들어왔을 때만 
+            if (obj1.FloorLeftCorner.x > obj2.FloorLeftCorner.x
+                && obj1.FloorRightCorner.x < obj2.FloorRightCorner.x)
+            {
+                var leftCorner = new Vector2(obj1.FloorLeftCorner.x, obj1.FloorLeftCorner.y);
+                var bottomCorner = new Vector2(obj1.FloorBottomCorner.x, obj1.FloorBottomCorner.y);
+                var rightCorner = new Vector2(obj1.FloorRightCorner.x, obj1.FloorRightCorner.y);
+
+                var rightToTop = obj2.FloorTopCorner - obj2.FloorRightCorner;
+                var leftToTop = obj2.FloorTopCorner - obj2.FloorLeftCorner;
+                
+                // 비교 대상의 우측 상단 빗변과 하단 꼭짓점의 수직선상에 교차하는지 체크
+                if (LineSegmentsIntersect(leftCorner, leftCorner + downVector, obj2.FloorRightCorner, obj2.FloorRightCorner + rightToTop)
+                    || LineSegmentsIntersect(leftCorner, leftCorner + downVector, obj2.FloorLeftCorner, obj2.FloorLeftCorner + leftToTop))
+                {
                     return false;
+                }
+            
+                if (LineSegmentsIntersect(bottomCorner, bottomCorner + downVector, obj2.FloorRightCorner, obj2.FloorRightCorner + rightToTop)
+                    || LineSegmentsIntersect(bottomCorner, bottomCorner + downVector, obj2.FloorLeftCorner, obj2.FloorLeftCorner + leftToTop))
+                {
+                    return false;
+                }
+            
+                if (LineSegmentsIntersect(rightCorner, rightCorner + downVector, obj2.FloorRightCorner, obj2.FloorRightCorner + rightToTop)
+                    || LineSegmentsIntersect(rightCorner, rightCorner + downVector, obj2.FloorLeftCorner, obj2.FloorLeftCorner + leftToTop))
+                {
+                    return false;
+                }
             }
             else
             {
-                var topToLeft = obj2.FloorLeftCorner - obj2.FloorTopCorner;
-                var topToObj1Right = obj1.FloorRightCorner - obj2.FloorTopCorner;
-                
-                // 왼쪽 모서리 뒤쪽에 위치한 벡터는 뒤로 판단
-                if (Cross(topToLeft.normalized, topToObj1Right.normalized) <= 0)
-                    return false;
-            }
+                // 이 경우는 꼭짓점이 안쪽에서 벗어난 경우, 면 하단에 체크 면적을 만들어서 비교 대상의 꼭짓점이 들어왔는지 확인
+                var rightFaceCorners = new Vector2[]
+                {
+                    obj1.FloorBottomCorner,
+                    obj1.FloorRightCorner,
+                    obj1.FloorRightCorner + Vector3.down * range,
+                    obj1.FloorBottomCorner + Vector3.down * range,
+                };
             
-            // 바닥 안쪽 면으로 들어왔는지 한번 더 확인
-            if (IsPolygonsOverlap(obj1.Floors, obj2.Floors))
-            {
-                return IsPointInPolygon(obj1.Floors[2], obj2.Floors) == false
-                       && IsPointInPolygon(obj1.Floors[0], obj2.Floors);
+                if (IsPointInPolygon(obj2.FloorLeftCorner, rightFaceCorners)
+                    || IsPointInPolygon(obj2.FloorRightCorner, rightFaceCorners)
+                    || IsPointInPolygon(obj2.FloorTopCorner, rightFaceCorners)
+                    || IsPointInPolygon(obj2.FloorBottomCorner, rightFaceCorners))
+                    return false;
+            
+                var leftFaceCorners = new Vector2[]
+                {
+                    obj1.FloorLeftCorner,
+                    obj1.FloorBottomCorner,
+                    obj1.FloorBottomCorner + Vector3.down * range,
+                    obj1.FloorLeftCorner + Vector3.down * range,
+                };
+            
+                if (IsPointInPolygon(obj2.FloorLeftCorner, leftFaceCorners)
+                    || IsPointInPolygon(obj2.FloorRightCorner, leftFaceCorners)
+                    || IsPointInPolygon(obj2.FloorBottomCorner, leftFaceCorners)
+                    || IsPointInPolygon(obj2.FloorTopCorner, leftFaceCorners))
+                    return false;   
             }
 
             return true;
         }
-        
+
         public static bool IsOverlap(this IsometricObject obj1, IsometricObject obj2)
         {
             return IsPolygonsOverlap(obj1.Corners, obj2.Corners);
@@ -108,6 +147,24 @@ namespace Isometric2D
             }
 
             return new Rect(minX, minY, maxX - minX, maxY - minY);
+        }
+        
+        public static Vector3? GetLineIntersection(Vector3 p1, Vector3 d1, Vector3 p2, Vector3 d2)
+        {
+            // 평행 여부 확인
+            var denim = Vector3.Cross(d1, d2).magnitude;
+
+            // 두 방향 벡터가 평행하면 교차점이 없다.
+            if (denim == 0)
+                return null;
+
+            // 교차점을 찾기 위한 매개변수 계산
+            var diff = p2 - p1;
+            var t1 = Vector3.Cross(d2, diff).magnitude / denim;
+
+            // 교차점을 반환
+            var intersectionPoint = p1 + t1 * d1;
+            return intersectionPoint;
         }
         
         private static bool LineSegmentsIntersect(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2)

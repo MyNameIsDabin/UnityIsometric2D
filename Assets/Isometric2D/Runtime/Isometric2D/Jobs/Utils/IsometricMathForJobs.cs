@@ -9,29 +9,67 @@ namespace Isometric2D
     {
         public static bool IsInFrontOf(Vector2Corners4 obj1, Vector2Corners4 obj2)
         {
-            if (obj2[0].x < obj1[2].x)
-            {
-                var dire1 = obj2[1] - obj2[0];
-                var dire2 = obj1[3] - obj2[0];
+            var range = (obj1[0].y - obj1[2].y) + (obj2[0].y - obj2[2].y);
+            var downVector = Vector2.down * range;
             
-                if (Cross(dire1.normalized, dire2.normalized) >= 0)
+            if (obj1[3].x > obj2[3].x && obj1[1].x < obj2[1].x)
+            {
+                var leftCorner = obj1[3];
+                var bottomCorner = obj1[2];
+                var rightCorner = obj1[1];
+
+                var rightToTop = obj2[0] - obj2[1];
+                var leftToTop = obj2[0] - obj2[3];
+                
+                if (LineSegmentsIntersect(leftCorner, leftCorner + downVector, obj2[1], obj2[1] + rightToTop)
+                    || LineSegmentsIntersect(leftCorner, leftCorner + downVector, obj2[3], obj2[3] + leftToTop))
+                {
                     return false;
+                }
+            
+                if (LineSegmentsIntersect(bottomCorner, bottomCorner + downVector, obj2[1], obj2[1] + rightToTop)
+                    || LineSegmentsIntersect(bottomCorner, bottomCorner + downVector, obj2[3], obj2[3] + leftToTop))
+                {
+                    return false;
+                }
+            
+                if (LineSegmentsIntersect(rightCorner, rightCorner + downVector, obj2[1], obj2[1] + rightToTop)
+                    || LineSegmentsIntersect(rightCorner, rightCorner + downVector, obj2[3], obj2[3] + leftToTop))
+                {
+                    return false;
+                }
             }
             else
             {
-                var dire1 = obj2[3] - obj2[0];
-                var dire2 = obj1[1] - obj2[0];
-                
-                if (Cross(dire1.normalized, dire2.normalized) <= 0)
+                var rightFaceCorners = new Vector2Corners4
+                {
+                    v0 = obj1[2],
+                    v1 = obj1[1],
+                    v2 = obj1[1] + Vector2.down * range,
+                    v3 = obj1[2] + Vector2.down * range,
+                };
+            
+                if (IsPointInPolygon(obj2[3], rightFaceCorners)
+                    || IsPointInPolygon(obj2[1], rightFaceCorners)
+                    || IsPointInPolygon(obj2[0], rightFaceCorners)
+                    || IsPointInPolygon(obj2[2], rightFaceCorners))
                     return false;
+            
+                var leftFaceCorners = new Vector2Corners4
+                {
+                    v0 = obj1[3],
+                    v1 = obj1[2],
+                    v2 = obj1[2] + Vector2.down * range,
+                    v3 = obj1[3] + Vector2.down * range,
+                };
+            
+                if (IsPointInPolygon(obj2[3], leftFaceCorners)
+                    || IsPointInPolygon(obj2[1], leftFaceCorners)
+                    || IsPointInPolygon(obj2[2], leftFaceCorners)
+                    || IsPointInPolygon(obj2[0], leftFaceCorners))
+                    return false;   
             }
 
-            if (IsPolygonsOverlap(obj1, obj2))
-            {
-                return IsPointInPolygon(obj1[2], obj2) == false
-                       && IsPointInPolygon(obj1[0], obj2);
-            }
-            
             return true;
         }
 
