@@ -6,11 +6,12 @@ namespace Isometric2D
     {
         public static bool IsInFrontOf(this IsometricObject obj1, IsometricObject obj2)
         {
-            var range = obj1.FloorTopCorner.y > obj2.FloorTopCorner.y
-                ? obj1.FloorTopCorner.y - obj2.FloorBottomCorner.y
-                : obj2.FloorTopCorner.y - obj1.FloorBottomCorner.y;
+            var obj1ToObj2 = obj1.FloorTopCorner.y - obj2.FloorBottomCorner.y;
+            var obj2ToObj1 = obj2.FloorTopCorner.y - obj1.FloorBottomCorner.y;
             
-            var downVector = Vector2.down * range;
+            var range = obj1ToObj2 > obj2ToObj1 ? obj1ToObj2 : obj2ToObj1;
+            
+            var downVector = Vector2.down * (range);
             
             // 수직선상 교차 체크는 범위 안쪽으로 객체가 들어왔을 때만 
             if (obj1.FloorLeftCorner.x > obj2.FloorLeftCorner.x
