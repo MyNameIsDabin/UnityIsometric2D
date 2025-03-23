@@ -35,6 +35,8 @@ IsometricSortingGroup와 IsometricSpriteRenderer 컴포넌트를 정렬하기를
 
 이 두 컴포넌트는 IsometricObject 컴포넌트를 의존하도록 되어있습니다. 이 컴포넌트는 실제 계산된 Order 정보를 가지기 때문에 원한다면 스프라이트 sortOrder가 아닌 다른 정렬 기준을 직접 커스텀해서 사용할 수도 있습니다. `IsometricOrderBinder` 클래스를 상속해서 구현하면 됩니다.
 
+Topology 정렬 방식의 한계로 인해 객체가 많아지면 금방 퍼포먼스가 급감합니다. 위 컴포넌트들은 보여지는 객체만 정렬 목록에 포함시키는 culling 옵션이 지원됩니다.
+
 ### LossyScale에 따른 Isometric 영역 대응
 
 ![](https://github.com/MyNameIsDabin/UnityIsometric2D/blob/master/Guides/Feature3.gif)
