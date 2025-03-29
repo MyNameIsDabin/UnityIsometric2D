@@ -10,10 +10,12 @@ namespace Isometric2D
     public class IsometricObject : MonoBehaviour
     {
         [SerializeField] private Vector2 extends;
+        [SerializeField] private Vector2 offset;
         [SerializeField] private float height;
         
         private int _order;
         private bool _isDirty;
+        private Vector2? _cachedOffset;
         private Vector2? _cachedPosition;
         private Vector2? _cachedExtends;
         private float _cachedHeight;
@@ -115,7 +117,7 @@ namespace Isometric2D
 
         private void UpdateCorners(IsometricWorld isometricWorld)
         {
-            Corners = isometricWorld.GetIsometricCubeWorldCorners(transform.position, extends, height, transform.lossyScale);
+            Corners = isometricWorld.GetIsometricCubeWorldCorners(transform.position + new Vector3(offset.x, offset.y), extends, height, transform.lossyScale);
 
             var virtualHeight = Vector2.up * height;
             
@@ -138,6 +140,12 @@ namespace Isometric2D
             if (_cachedPosition != transform.position)
             {
                 _cachedPosition = transform.position;
+                _isDirty = true;
+            }
+
+            if (_cachedOffset != offset)
+            {
+                _cachedOffset = offset;
                 _isDirty = true;
             }
 
