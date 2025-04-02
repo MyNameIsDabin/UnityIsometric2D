@@ -20,6 +20,7 @@ namespace Isometric2D
         [SerializeField] private Color defaultColor = Color.white;
         [SerializeField] private Color linkedColor = Color.green;
         [SerializeField] private Color arrowColor = Color.yellow;
+        [SerializeField] private bool updateOnEditor = true;
         [SerializeField] private bool debugMode = false;
         
         private Vector2[] _cachedIsometricIdentityCorners;
@@ -42,6 +43,7 @@ namespace Isometric2D
         public Color LinkedColor => linkedColor;
         public Color ArrowColor => arrowColor;
         public bool IsDebugMode => debugMode;
+        public bool UpdateOnEditor => updateOnEditor;
 
         public List<IsometricObject> IsometricObjects => _isometricObjects;
         
@@ -92,7 +94,7 @@ namespace Isometric2D
         {
             if ((_instance != null && _instance != this))
             {
-                Destroy(gameObject);
+                DestroyImmediate(gameObject);
                 return;
             }
             
@@ -106,7 +108,8 @@ namespace Isometric2D
 
         private void Update()
         {
-            SortIsometricObjects();
+            if (Application.isPlaying || updateOnEditor)
+                SortIsometricObjects();
         }
 
         public void AddIsometricObject(IsometricObject isometricObject)
