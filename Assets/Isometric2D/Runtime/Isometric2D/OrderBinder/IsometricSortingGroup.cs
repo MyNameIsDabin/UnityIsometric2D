@@ -10,7 +10,7 @@ namespace Isometric2D
     {
         private SortingGroup _sortingGroup;
 
-        private SortingGroup SortingGroup
+        public SortingGroup SortingGroup
         {
             get
             {

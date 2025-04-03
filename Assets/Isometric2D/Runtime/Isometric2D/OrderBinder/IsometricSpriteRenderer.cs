@@ -8,7 +8,7 @@ namespace Isometric2D
     {
         private SpriteRenderer _spriteRenderer;
 
-        private SpriteRenderer SpriteRenderer
+        public SpriteRenderer SpriteRenderer
         {
             get
             {
