@@ -259,7 +259,7 @@ namespace Isometric2D
             Gizmos.color = previousColor;
         }
 
-        private void SortIsometricObjects()
+        public void SortIsometricObjects()
         {
         #if UNITY_EDITOR
             _sortCallCount++;
