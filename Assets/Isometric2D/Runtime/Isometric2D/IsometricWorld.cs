@@ -1,27 +1,16 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
 namespace Isometric2D
 {
-    [ExecuteAlways]
-    public class IsometricWorld : MonoBehaviour
+    public partial class IsometricWorld : MonoBehaviour
     {
         [Header("Isometric Settings")] 
         [SerializeField] private float tileWidth = 1f;
         [SerializeField] private float tileHeight = 0.57735f;
         [SerializeField] private IsometricSorterType sorterType = IsometricSorterType.JobSystem;
-        [SerializeField] private bool culling;
-        
-        [Header("Gizmo Settings")] 
-        [SerializeField] private float avgTimePer10Calls;
-        [SerializeField] private int sortedObjectCount;
-        [SerializeField] private Color defaultColor = Color.white;
-        [SerializeField] private Color linkedColor = Color.green;
-        [SerializeField] private Color arrowColor = Color.yellow;
-        [SerializeField] private bool updateOnEditor = true;
-        [SerializeField] private bool debugMode = false;
+        [SerializeField] private bool culling = true;
         
         private Vector2[] _cachedIsometricIdentityCorners;
         private Vector2 _cachedDirectionToRightTop;
@@ -31,21 +20,10 @@ namespace Isometric2D
         private float _cachedTileWidth;
         private float _cachedTileHeight;
         
-        private int _sortCallCount;
-        private float _sortAccElapsed;
         private IIsometricSorter _isometricSorter;
         private IsometricSorterType _cachedIsometricSorterType;
         
-        private readonly Stopwatch _sortStopWatch = new();
         private readonly List<IsometricObject> _isometricObjects = new();
-        
-        public Color DefaultColor => defaultColor;
-        public Color LinkedColor => linkedColor;
-        public Color ArrowColor => arrowColor;
-        public bool IsDebugMode => debugMode;
-        public bool UpdateOnEditor => updateOnEditor;
-
-        public List<IsometricObject> IsometricObjects => _isometricObjects;
         
         public IIsometricSorter IsometricSorter
         {
@@ -69,21 +47,15 @@ namespace Isometric2D
         {
             get
             {
-                #if UNITY_EDITOR
-                if (_instance != null && _instance.gameObject.scene.IsValid())
-                    return _instance;
-                _instance = FindObjectsOfType<IsometricWorld>()
-                    .FirstOrDefault(x => x.gameObject.scene.IsValid());
-                #else
                 if (_instance != null)
                     return _instance;
+                
                 _instance = FindObjectOfType<IsometricWorld>();
-                #endif
 
                 if (_instance != null)
                     return _instance;
 
-                var inst = new GameObject("Isometric World").AddComponent<IsometricWorld>();
+                var inst = new GameObject(nameof(IsometricWorld)).AddComponent<IsometricWorld>();
                 return inst;
             }
         }
@@ -108,8 +80,10 @@ namespace Isometric2D
 
         private void Update()
         {
-            if (Application.isPlaying || updateOnEditor)
-                SortIsometricObjects();
+            if (Application.isPlaying == false)
+                return;
+            
+            SortIsometricObjects();
         }
 
         public void AddIsometricObject(IsometricObject isometricObject)
@@ -244,58 +218,30 @@ namespace Isometric2D
             };
         }
 
-        public void DrawIsometricTile(Vector2[] vertices, params Color[] colors)
+        public List<IsometricObject> GetIsometricObjects(bool isCull = false)
         {
-            var previousColor = Gizmos.color;
+#if UNITY_EDITOR
+            var isoObjList = Application.isPlaying ? _isometricObjects : GetAllIsoObjectsInEditor();
+#else
+            var isoObjList = _isometricObjects;
+#endif
+            if (!isCull) 
+                return isoObjList;
+            
+            var culledObjects = isoObjList
+                .Where(x => x.ShouldIgnoreSort == false)
+                .ToList();
 
-            for (var i = 0; i < 4; i++)
-            {
-                Gizmos.color = colors.Length > i ? colors[i] : previousColor;
-                var start = vertices[i];
-                var end = vertices[(i + 1) % 4];
-                Gizmos.DrawLine(start, end);
-            }
-
-            Gizmos.color = previousColor;
+            return culledObjects;
         }
 
         public void SortIsometricObjects()
         {
-        #if UNITY_EDITOR
-            _sortCallCount++;
-            _sortStopWatch.Restart();
-        #endif
-
-            if (culling)
-            {
-                var culledObjects = _isometricObjects
-                    .Where(x => x.ShouldIgnoreSort == false)
-                    .ToList();
-                
-        #if UNITY_EDITOR
-                sortedObjectCount = culledObjects.Count;
-        #endif   
-                IsometricSorter.SortIsometricObjects(culledObjects);
-            }
-            else
-            {
-        #if UNITY_EDITOR
-                sortedObjectCount = _isometricObjects.Count;
-        #endif
-                IsometricSorter.SortIsometricObjects(_isometricObjects);
-            }
-            
-        #if UNITY_EDITOR
-            _sortStopWatch.Stop();
-            _sortAccElapsed += _sortStopWatch.Elapsed.Milliseconds;
-
-            if (_sortCallCount >= 10)
-            {
-                avgTimePer10Calls = _sortAccElapsed / _sortCallCount;   
-                _sortAccElapsed = 0;
-                _sortCallCount = 0;
-            }
-        #endif
+            var isometricObjects = GetIsometricObjects(culling);
+#if UNITY_EDITOR
+            sortedObjectCount = isometricObjects.Count;
+#endif
+            IsometricSorter.SortIsometricObjects(isometricObjects);
         }
     }
 }

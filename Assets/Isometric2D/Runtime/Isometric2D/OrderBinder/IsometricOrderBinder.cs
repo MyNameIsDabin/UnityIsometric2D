@@ -5,6 +5,8 @@ namespace Isometric2D
     public abstract class IsometricOrderBinder : MonoBehaviour
     {
         [SerializeField] protected IsometricObject targetIsoObject;
+
+        public IsometricObject TargetIsoObject => targetIsoObject;
         
         private void OnEnable()
         {
@@ -20,6 +22,8 @@ namespace Isometric2D
             targetIsoObject.OnShouldIgnoreSort = null;
         }
 
+        public void ChangeOrder(int order) => OnChangeOrder(order);
+        
         protected virtual void OnChangeOrder(int order)
         {
             

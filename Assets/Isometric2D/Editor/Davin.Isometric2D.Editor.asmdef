@@ -1,0 +1,18 @@
+{
+    "name": "Davin.Isometric.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:ef1464489ace3044c88a13200a1d1f92"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
