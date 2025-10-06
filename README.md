@@ -7,7 +7,7 @@ A 2.5D isometric sorting plugin for Unity.
 
 ### System Requirements
 
-- **Unity**: 2021.3 or newer
+- **Unity**: 2023.2 or newer
 
 ### Quick Start
 
