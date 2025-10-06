@@ -13,8 +13,8 @@ namespace Isometric2D
         [ReadOnly]
         public NativeArray<Vector2Corners6> isoCorners;
         
-        public NativeMultiHashMap<int, int>.ParallelWriter fronts;
-        public NativeMultiHashMap<int, int>.ParallelWriter backs;
+        public NativeParallelMultiHashMap<int, int>.ParallelWriter fronts;
+        public NativeParallelMultiHashMap<int, int>.ParallelWriter backs;
         
         public void Execute(int index, TransformAccess transform)
         {

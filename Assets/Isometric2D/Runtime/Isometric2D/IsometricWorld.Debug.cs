@@ -127,6 +127,10 @@ namespace Isometric2D
         private void DrawIsometricObject(IsometricObject target)
         {
             var isoObjects = _cachedEditorIsoObjects;
+            
+            if (isoObjects == null)
+                return;
+            
             var previousColor = Gizmos.color;
 
             var isConnected = isoObjects.Any(x => x.Fronts.Contains(target))

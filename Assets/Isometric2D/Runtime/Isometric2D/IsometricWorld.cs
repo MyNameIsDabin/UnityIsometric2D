@@ -50,7 +50,7 @@ namespace Isometric2D
                 if (_instance != null)
                     return _instance;
                 
-                _instance = FindObjectOfType<IsometricWorld>();
+                _instance = FindFirstObjectByType<IsometricWorld>();
 
                 if (_instance != null)
                     return _instance;
